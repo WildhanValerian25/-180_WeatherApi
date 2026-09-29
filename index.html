@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoInfo - Platform Pencarian Lokasi Global</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            color: #2c3e50;
+            padding: 35px 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 460px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a2a3a;
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e6ed;
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s ease;
+            background: #f8fafc;
+            color: #2c3e50;
+        }
+
+        input:focus {
+            border-color: #0066ff;
+            background: #fff;
+        }
+
+        button {
+            padding: 12px 22px;
+            background: linear-gradient(135deg, #0066ff, #0052cc);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 102, 255, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .error-msg {
+            color: #e74c3c;
+            font-size: 13px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .result {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 20px;
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px dashed #cbd5e1;
+            font-size: 14px;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .value {
+            font-weight: 600;
+            color: #0f172a;
+            text-align: right;
+        }
+
+        .coord-box {
+            background: #0f172a;
+            color: #fff;
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .coord-item {
+            text-align: center;
+        }
+
+        .coord-item span {
+            display: block;
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .coord-item strong {
+            font-size: 14px;
+            color: #38bdf8;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div class="header">
+            <h2>GeoInfo Explorer</h2>
+            <p>Pencarian Data Geokoding & Koordinat Global</p>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="inputLokasi" placeholder="Masukkan lokasi (mis: Malang, Tokyo...)" onkeypress="handleKeyPress(event)">
+            <button onclick="cariLokasi()">Cari</button>
+        </div>
+
+        <div id="errorMsg" class="error-msg"></div>
+
+        <div class="result" id="hasilData">
+            <div class="info-row">
+                <span class="label">Negara</span>
+                <span class="value" id="negara">-</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Provinsi / State</span>
+                <span class="value" id="provinsi">-</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Kecamatan / Lokasi</span>
+                <span class="value" id="kecamatan">-</span>
+            </div>
+
+            <div class="coord-box">
+                <div class="coord-item">
+                    <span>Longitude</span>
+                    <strong id="longitude">-</strong>
+                </div>
+                <div class="coord-item">
+                    <span>Latitude</span>
+                    <strong id="latitude">-</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = 'RDnFgLMyAKZnInguAFOY';
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                cariLokasi();
+            }
+        }
+
+        function cariLokasi() {
+            const query = document.getElementById("inputLokasi").value.trim();
+            const errorMsg = document.getElementById("errorMsg");
+            const hasilData = document.getElementById("hasilData");
+
+            errorMsg.innerText = "";
+            hasilData.style.display = "none";
+
+            if (!query) {
+                errorMsg.innerText = "Harap masukkan nama lokasi terlebih dahulu!";
+                return;
+            }
+
+            const url = `https://api.maptiler.com/geocoding/${encodeURIComponent(query)}.json?key=${API_KEY}&language=id`;
+
+            fetch(url)
+                .then(res => {
+                    if (!res.ok) throw new Error("Gagal mengambil data dari server MapTiler.");
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.features && data.features.length > 0) {
+                        const feature = data.features[0];
+                        const coordinates = feature.geometry.coordinates;
+                        const context = feature.context || [];
+
+                        let country = "-";
+                        let province = "-";
+                        let district = feature.text || "-";
+
+                        context.forEach(item => {
+                            const id = item.id || "";
+                            if (id.includes("country")) {
+                                country = item.text;
+                            } else if (id.includes("province") || id.includes("region") || id.includes("state")) {
+                                province = item.text;
+                            } else if (id.includes("district") || id.includes("locality") || id.includes("municipality") || id.includes("place")) {
+                                if (district === "-" || district === feature.text) {
+                                    district = item.text;
+                                }
+                            }
+                        });
+
+                        if (feature.place_type && feature.place_type.includes("country")) {
+                            country = feature.text;
+                            district = "-";
+                        }
+
+                        document.getElementById("negara").innerText = country;
+                        document.getElementById("provinsi").innerText = province;
+                        document.getElementById("kecamatan").innerText = feature.text || district;
+                        document.getElementById("longitude").innerText = coordinates[0];
+                        document.getElementById("latitude").innerText = coordinates[1];
+
+                        hasilData.style.display = "block";
+                    } else {
+                        errorMsg.innerText = "Lokasi tidak ditemukan.";
+                    }
+                })
+                .catch(err => {
+                    errorMsg.innerText = err.message;
+                });
+        }
+    </script>
+
+</body>
+</html>
